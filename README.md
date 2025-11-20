@@ -7,7 +7,7 @@ Fornisce JWT auth, refresh tokens, password recovery e validazione robusta senza
 ## Installazione
 
 ```bash
-pip install -e .
+pip install git+https://github.com/AlessioQuagliara/linkbay-auth.git
 ```
 
 ## How to Use
