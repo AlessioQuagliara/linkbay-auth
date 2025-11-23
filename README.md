@@ -1,4 +1,4 @@
-# LinkBay-Auth
+# LinkBay-Auth Beta 1.0.0
 
 [![License](https://img.shields.io/badge/license-MIT-blue)]()
 
