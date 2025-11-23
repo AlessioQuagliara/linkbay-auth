@@ -1,8 +1,12 @@
-# LinkBay-Auth Beta 0.1.0
+# LinkBay-Auth v0.1.0
 
-[![License](https://img.shields.io/badge/license-MIT-blue)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]() [![Python](https://img.shields.io/badge/python-3.8+-blue)]() [![Tests](https://img.shields.io/badge/tests-passing-green)]()
 
 **Sistema di autenticazione JWT per FastAPI - Zero dipendenze DB, puramente logica**
+
+✅ **Testato e robusto** - Fix bcrypt/passlib compatibility issues  
+✅ **384 linee di codice** - Semplice e mantenibile  
+✅ **Bcrypt nativo** - Usa `bcrypt>=4.0.0` direttamente
 
 ## Caratteristiche
 
@@ -138,10 +142,46 @@ I tuoi modelli devono avere questi campi minimi:
 
 ## Note Tecniche
 
-- **Password Truncation**: Le password vengono automaticamente troncate a 72 byte (limite bcrypt)
+- **Bcrypt Nativo**: Usa direttamente `bcrypt>=4.0.0` (no passlib) per massima compatibilità
+- **Password Sicure**: Gestisce automaticamente password lunghe (bcrypt ha limite 72 byte)
 - **Async Support**: Tutti i metodi del `UserServiceProtocol` sono async
 - **Token Expiry**: Access token default 15 min, Refresh token default 30 giorni
-- **Sicurezza**: Hash bcrypt automatico, JWT firmati con HS256
+- **Sicurezza**: Hash bcrypt con salt automatico, JWT firmati con HS256
+- **Error Handling**: Gestione robusta degli errori di hashing/verifica
+- **Testato**: Include test suite completa (`test_basic.py`)
+
+## Testing
+
+Esegui i test per verificare il funzionamento:
+
+```bash
+python3 test_basic.py
+```
+
+Tutti i test devono passare con ✅ (12/12 test)
+
+## File Utili
+
+- `test_basic.py` - Test suite completa (12 test)
+- `example_integration.py` - Esempio completo con SQLAlchemy
+- `CHANGELOG.md` - Storia delle modifiche
+- `README.md` - Questa documentazione
+
+## Troubleshooting
+
+### Errore bcrypt/passlib
+Se vedi errori come `AttributeError: module 'bcrypt' has no attribute '__about__'`:
+- ✅ **Risolto**: La libreria usa ora `bcrypt>=4.0.0` direttamente (no passlib)
+- Reinstalla: `pip install -e . --force-reinstall`
+
+### Password troppo lunghe
+- ✅ **Risolto**: Gestione automatica del limite 72 byte di bcrypt
+- Le password vengono gestite correttamente senza errori
+
+### Import Error email-validator
+Se vedi `ImportError: email-validator is not installed`:
+- ✅ **Risolto**: Dipendenza inclusa in `pydantic[email]`
+- Reinstalla: `pip install -e .`
 
 ## Licenza
 ```

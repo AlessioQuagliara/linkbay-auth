@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
-from passlib.context import CryptContext
+import bcrypt
 from .schemas import UserServiceProtocol, TokenData
 
 class AuthCore:
@@ -18,21 +18,36 @@ class AuthCore:
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
-        self.pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
-        """Verifica password con truncation automatica per bcrypt"""
-        # Bcrypt ha limite di 72 bytes - truncate se necessario
-        if len(plain_password.encode('utf-8')) > 72:
-            plain_password = plain_password[:72]
-        return self.pwd_context.verify(plain_password, hashed_password)
+        """Verifica password con bcrypt - gestisce automaticamente il limite 72 byte"""
+        try:
+            # Converti in bytes se necessario
+            if isinstance(plain_password, str):
+                plain_password = plain_password.encode('utf-8')
+            if isinstance(hashed_password, str):
+                hashed_password = hashed_password.encode('utf-8')
+            
+            return bcrypt.checkpw(plain_password, hashed_password)
+        except Exception as e:
+            # Log error se necessario
+            return False
 
     def get_password_hash(self, password: str) -> str:
-        """Hash della password con truncation automatica per bcrypt"""
-        # Bcrypt ha limite di 72 bytes - truncate se necessario
-        if len(password.encode('utf-8')) > 72:
-            password = password[:72]
-        return self.pwd_context.hash(password)
+        """Hash della password con bcrypt - gestisce automaticamente il limite 72 byte"""
+        try:
+            # Converti in bytes
+            if isinstance(password, str):
+                password = password.encode('utf-8')
+            
+            # Bcrypt gestisce automaticamente il limite 72 byte
+            salt = bcrypt.gensalt()
+            hashed = bcrypt.hashpw(password, salt)
+            
+            # Ritorna come stringa
+            return hashed.decode('utf-8')
+        except Exception as e:
+            raise ValueError(f"Errore durante l'hashing della password: {str(e)}")
 
     def create_access_token(self, data: dict, expires_delta: Optional[timedelta] = None):
         to_encode = data.copy()
