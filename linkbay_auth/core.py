@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, Set
 from jose import JWTError, jwt
 import bcrypt
-from .schemas import UserServiceProtocol, TokenData
+from .schemas import UserServiceProtocol, TokenData, PasswordPolicy
 
 class AuthCore:
     def __init__(
@@ -11,13 +11,19 @@ class AuthCore:
         secret_key: str,
         algorithm: str = "HS256",
         access_token_expire_minutes: int = 15,
-        refresh_token_expire_days: int = 30
+        refresh_token_expire_days: int = 30,
+        password_policy: Optional[PasswordPolicy] = None,
+        enable_token_blacklist: bool = False
     ):
         self.user_service = user_service
         self.secret_key = secret_key
         self.algorithm = algorithm
         self.access_token_expire_minutes = access_token_expire_minutes
         self.refresh_token_expire_days = refresh_token_expire_days
+        self.password_policy = password_policy or PasswordPolicy()
+        self.enable_token_blacklist = enable_token_blacklist
+        # In-memory blacklist (in produzione usare Redis)
+        self._token_blacklist: Set[str] = set()
 
     def verify_password(self, plain_password: str, hashed_password: str) -> bool:
         """Verifica password con bcrypt - gestisce automaticamente il limite 72 byte"""
@@ -67,6 +73,10 @@ class AuthCore:
         return refresh_token
 
     async def verify_token(self, token: str) -> Optional[TokenData]:
+        # Controlla blacklist
+        if self.is_token_blacklisted(token):
+            return None
+            
         try:
             payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
             user_id: str = payload.get("sub")
@@ -76,6 +86,44 @@ class AuthCore:
                 return None
                 
             return TokenData(user_id=int(user_id))
+        except JWTError:
+            return None
+
+    def validate_password_strength(self, password: str) -> tuple[bool, Optional[str]]:
+        """Valida forza password usando policy configurata"""
+        return self.password_policy.validate(password)
+    
+    def blacklist_token(self, token: str):
+        """Aggiungi token alla blacklist (per logout immediato)"""
+        if self.enable_token_blacklist:
+            self._token_blacklist.add(token)
+    
+    def is_token_blacklisted(self, token: str) -> bool:
+        """Verifica se token è in blacklist"""
+        if not self.enable_token_blacklist:
+            return False
+        return token in self._token_blacklist
+    
+    def create_password_reset_token(self, email: str, expires_hours: int = 1) -> str:
+        """Crea token per reset password con expiry verificabile"""
+        expires_delta = timedelta(hours=expires_hours)
+        reset_token = self.create_access_token(
+            {"sub": email, "type": "password_reset"}, 
+            expires_delta
+        )
+        return reset_token
+    
+    def verify_password_reset_token(self, token: str) -> Optional[str]:
+        """Verifica token reset password e ritorna email se valido"""
+        try:
+            payload = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+            email: str = payload.get("sub")
+            token_type: str = payload.get("type")
+            
+            if email is None or token_type != "password_reset":
+                return None
+                
+            return email
         except JWTError:
             return None
 

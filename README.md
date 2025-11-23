@@ -1,22 +1,40 @@
-# LinkBay-Auth v0.1.0
+# LinkBay-Auth v0.2.0
 
-[![License](https://img.shields.io/badge/license-MIT-blue)]() [![Python](https://img.shields.io/badge/python-3.8+-blue)]() [![Tests](https://img.shields.io/badge/tests-passing-green)]()
+[![License](https://img.shields.io/badge/license-MIT-blue)]() [![Python](https://img.shields.io/badge/python-3.8+-blue)]() [![Tests](https://img.shields.io/badge/tests-passing-green)]() [![Security](https://img.shields.io/badge/security-production--ready-brightgreen)]()
 
-**Sistema di autenticazione JWT per FastAPI - Zero dipendenze DB, puramente logica**
+**Sistema di autenticazione JWT per FastAPI - Production-ready con sicurezza avanzata**
 
-✅ **Testato e robusto** - Fix bcrypt/passlib compatibility issues  
-✅ **384 linee di codice** - Semplice e mantenibile  
-✅ **Bcrypt nativo** - Usa `bcrypt>=4.0.0` direttamente
+ **Production-Ready** - Protezione brute force, token blacklist, security logging  
+ **Password Policy** - Policy configurabili con validazione avanzata  
+ **Device Tracking** - Gestione sessioni multi-dispositivo  
+ **Security Audit** - Log completo eventi di sicurezza  
+ **Bcrypt nativo** - Usa `bcrypt>=4.0.0` direttamente
 
 ## Caratteristiche
 
+###  Core
 - **JWT** con access token e refresh token
 - **Zero dipendenze DB** - Implementi tu i modelli
 - **Completamente async** - Perfetto per FastAPI
-- **Password hashing** con bcrypt
+- **Password hashing** con bcrypt nativo
 - **Token revocation** - Singolo o tutti i dispositivi
-- **Reset password** - Con token temporanei
-- **Protocollo pulito** - UserServiceProtocol da implementare
+- **Reset password** - Con token temporanei verificabili
+
+### Sicurezza Avanzata (v0.2.0)
+- **Protezione Brute Force** - Rate limiting configurabile
+- **Token Blacklist** - Logout immediato access token
+- **Password Policy** - Policy configurabili con validazione
+- **Email Validation** - Validazione avanzata con check DNS
+- **Security Logging** - Audit trail completo
+- **Device Tracking** - Gestione sessioni multi-dispositivo
+- **Pattern Detection** - Rilevamento password deboli
+
+## Documentazione
+
+- **[ Quick Start](QUICK_START.md)** - Setup in 5 minuti
+- **[ Release Notes v0.2.0](RELEASE_NOTES_v0.2.0.md)** - Riepilogo completo release
+- **[ Security Best Practices](SECURITY_BEST_PRACTICES.md)** - Guida produzione
+- **[ Changelog v0.2.0](CHANGELOG_v0.2.0.md)** - Dettagli feature
 
 ## Installazione
 
@@ -134,21 +152,42 @@ async def protected_route(current_user = Depends(get_current_active_user)):
 
 ## Requisiti Modelli
 
-I tuoi modelli devono avere questi campi minimi:
-
-**User**: `id`, `email`, `hashed_password`
+### Modelli Base (v0.1.0)
+**User**: `id`, `email`, `hashed_password`, `is_active`
 
 **RefreshToken**: `id`, `user_id`, `token`, `expires_at`, `revoked`
 
+### Modelli Avanzati (v0.2.0 - Opzionali)
+**RefreshToken** (con device tracking):
+- `user_agent`, `ip_address`, `device_name`
+
+**SecurityLog** (audit trail):
+- `id`, `event_type`, `user_id`, `email`, `ip_address`, `user_agent`, `details`, `timestamp`
+
+**LoginAttempt** (brute force protection):
+- `id`, `email`, `ip_address`, `success`, `timestamp`
+
+Vedi `example_production.py` per implementazione completa.
+
 ## Note Tecniche
 
+### Core
 - **Bcrypt Nativo**: Usa direttamente `bcrypt>=4.0.0` (no passlib) per massima compatibilità
 - **Password Sicure**: Gestisce automaticamente password lunghe (bcrypt ha limite 72 byte)
 - **Async Support**: Tutti i metodi del `UserServiceProtocol` sono async
 - **Token Expiry**: Access token default 15 min, Refresh token default 30 giorni
 - **Sicurezza**: Hash bcrypt con salt automatico, JWT firmati con HS256
 - **Error Handling**: Gestione robusta degli errori di hashing/verifica
-- **Testato**: Include test suite completa (`test_basic.py`)
+
+### Sicurezza Avanzata (v0.2.0)
+- **Token Blacklist**: In-memory (dev) / Redis (production) per logout immediato
+- **Rate Limiting**: Configurabile, default 5 tentativi in 15 minuti
+- **Account Lockout**: Blocco temporaneo dopo tentativi falliti (default 30 min)
+- **Password Policy**: Min 8 caratteri, uppercase/lowercase/numbers configurabili
+- **Email Validation**: RFC 5322 compliant con check DNS opzionale
+- **Security Events**: 8 tipi di eventi tracciati automaticamente
+- **Device Tracking**: User agent, IP, device name nei refresh token
+- **Testato**: Test suite completa + esempio production-ready
 
 ## Testing
 
@@ -163,8 +202,11 @@ Tutti i test devono passare con ✅ (12/12 test)
 ## File Utili
 
 - `test_basic.py` - Test suite completa (12 test)
-- `example_integration.py` - Esempio completo con SQLAlchemy
-- `CHANGELOG.md` - Storia delle modifiche
+- `example_integration.py` - Esempio base con SQLAlchemy
+- `example_production.py` - **✨ Nuovo**: Implementazione production-ready con tutte le feature
+- `CHANGELOG.md` - Storia delle modifiche v0.1.0
+- `CHANGELOG_v0.2.0.md` - **✨ Nuovo**: Dettagli release v0.2.0
+- `security_utils.py` - **✨ Nuovo**: Utility di sicurezza avanzate
 - `README.md` - Questa documentazione
 
 ## Troubleshooting

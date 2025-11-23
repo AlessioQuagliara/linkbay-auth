@@ -1,7 +1,7 @@
 [project]
 name = "linkbay-auth"
-version = "0.1.0"
-description = "Sistema di autenticazione JWT per FastAPI - riutilizzabile e async"
+version = "0.2.0"
+description = "Sistema di autenticazione JWT per FastAPI - Production-ready con sicurezza avanzata"
 authors = [
     {name = "Alessio Quagliara", email = "quagliara.alessio@gmail.com"},
 ]
@@ -11,6 +11,7 @@ dependencies = [
     "bcrypt>=4.0.0",
     "python-multipart>=0.0.6",
     "pydantic[email]>=2.0.0",
+    "email-validator>=2.0.0",
 ]
 requires-python = ">=3.8"
 
