@@ -17,7 +17,7 @@
 ## Installazione
 
 ```bash
-pip install git+https://github.com/AlessioQuagliara/linkbay-auth.git
+pip install git+https://github.com/AlessioQuagliara/linkbay_auth.git
 ```
 
 ## Utilizzo Rapido
