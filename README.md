@@ -39,6 +39,10 @@
 ## Installazione
 
 ```bash
+pip install linkbay-auth==0.2.0
+```
+oppure
+```bash
 pip install git+https://github.com/AlessioQuagliara/linkbay_auth.git
 ```
 
